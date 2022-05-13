@@ -1,0 +1,24 @@
+
+name: 'conda-pack for lcls rhel7'
+description: 'Execute conda-pack in rhel7'
+author: 'jacquelinegarrahan'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout project
+      uses: actions/checkout@v2
+    - name: Build docker
+      uses: docker-practice/actions-setup-docker@master
+    - name: Pack environment
+      run: |
+        set -x
+        docker run -v $(pwd)/environment.yml:/tmp/environment.yml \
+        -v $(pwd):/tmp/project \
+        -v $(pwd)/${{ env.TEST_FILE }}:/tmp/run-test.sh \
+        -e ENVIRONMENT_NAME=${{ env.ENVIRONMENT_NAME }} --name build-env  -t jgarrahan/lcls-rhel7-conda-docker:v0.1 /tmp/environment.yml
+      shell: bash
+    - name: Copy environment
+      run: |
+        set -x 
+        docker cp build-env:/root/${{ env.ENVIRONMENT_NAME }}.tar.gz .
+      shell: bash
